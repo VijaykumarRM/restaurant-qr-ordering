@@ -46,16 +46,30 @@ app = FastAPI(
 
 
 # ============================================================
-# CORS — allow everything for local dev
+# CORS + PNA (Private Network Access) Middleware
+# Allows public HTTPS sites (like github.io) to fetch from local API (127.0.0.1:8000)
 # ============================================================
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=False,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+from fastapi.responses import Response
+
+@app.middleware("http")
+async def add_cors_and_pna(request: Request, call_next):
+    if request.method == "OPTIONS":
+        # Handle preflight requests
+        return Response(
+            status_code=200,
+            headers={
+                "Access-Control-Allow-Origin": "*",
+                "Access-Control-Allow-Methods": "*",
+                "Access-Control-Allow-Headers": "*",
+                "Access-Control-Allow-Private-Network": "true",
+            }
+        )
+        
+    response = await call_next(request)
+    response.headers["Access-Control-Allow-Origin"] = "*"
+    response.headers["Access-Control-Allow-Private-Network"] = "true"
+    return response
 
 
 # ============================================================
