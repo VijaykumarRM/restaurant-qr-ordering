@@ -995,16 +995,20 @@
     <script>
 
         // ===== CONFIG =====
-        let API_URL = window.location.origin;
-        if (window.location.protocol === "file:" || !window.location.origin || window.location.origin === "null") {
-            API_URL = "http://127.0.0.1:8000";
-        } else {
+        let API_URL = localStorage.getItem("custom_backend_api_url");
+        if (!API_URL) {
             const isLocal = window.location.hostname === "localhost" ||
                 window.location.hostname === "127.0.0.1" ||
                 window.location.hostname.startsWith("192.168.") ||
                 window.location.hostname.startsWith("10.");
-            if (isLocal && window.location.port !== "8000") {
+            const isGitHub = window.location.hostname.includes("github.io");
+
+            if (isGitHub || window.location.protocol === "file:" || !window.location.origin || window.location.origin === "null") {
+                API_URL = "http://127.0.0.1:8000";
+            } else if (isLocal && window.location.port !== "8000") {
                 API_URL = `${window.location.protocol}//${window.location.hostname}:8000`;
+            } else {
+                API_URL = window.location.origin;
             }
         }
         const RESTAURANT_ID = 1;
