@@ -93,15 +93,26 @@ def auto_seed():
                 db.add(table)
 
             items = [
-                ("Masala Dosa", "Crispy crepe with spiced potato filling", 120.0, "South Indian", "https://images.unsplash.com/photo-1589301760014-d929f39ce9b1?w=400"),
+                ("Masala Dosa", "Crispy crepe with spiced potato filling", 120.0, "South Indian", "https://images.unsplash.com/photo-1630383249896-424e482df921?w=400"),
                 ("Idli Sambar", "Steamed rice cakes with lentil soup", 80.0, "South Indian", "https://images.unsplash.com/photo-1589301760014-d929f39ce9b1?w=400"),
+                ("Medu Vada", "Crispy lentil donuts", 90.0, "South Indian", "https://images.unsplash.com/photo-1626132647523-66f5bf380027?w=400"),
                 ("Paneer Tikka", "Grilled cottage cheese marinated in spices", 240.0, "Starters", "https://images.unsplash.com/photo-1567188040759-fb8a883dc6d8?w=400"),
                 ("Chicken 65", "Spicy, deep-fried chicken starter", 280.0, "Starters", "https://images.unsplash.com/photo-1610057099443-fde8c4d50f91?w=400"),
-                ("Butter Chicken", "Rich creamy tomato chicken curry", 350.0, "Main Course", "https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?w=400"),
-                ("Paneer Butter Masala", "Cottage cheese in rich tomato gravy", 300.0, "Main Course", "https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?w=400"),
+                ("Crispy Corn", "Fried sweet corn tossed in spices", 180.0, "Starters", "https://images.unsplash.com/photo-1551754655-cd27e38d2076?w=400"),
+                ("Gobi Manchurian", "Indo-Chinese fried cauliflower", 200.0, "Starters", "https://images.unsplash.com/photo-1645177628172-a94c1f96e6db?w=400"),
+                ("Butter Chicken", "Rich creamy tomato chicken curry", 350.0, "Main Course", "https://images.unsplash.com/photo-1603894584373-5ac82b2ae398?w=400"),
+                ("Paneer Butter Masala", "Cottage cheese in rich tomato gravy", 300.0, "Main Course", "https://images.unsplash.com/photo-1631452180519-c014fe946bc7?w=400"),
+                ("Dal Makhani", "Slow-cooked black lentils", 220.0, "Main Course", "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=400"),
+                ("Garlic Naan", "Flatbread baked with minced garlic", 60.0, "Main Course", "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=400"),
                 ("Hyderabadi Chicken Biryani", "Authentic dum biryani with raita", 380.0, "Biryani", "https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=400"),
+                ("Mutton Dum Biryani", "Slow-cooked tender mutton biryani", 450.0, "Biryani", "https://images.unsplash.com/photo-1642821373181-696a54913e93?w=400"),
+                ("Margherita Pizza", "Classic cheese and tomato pizza", 299.0, "Fast Food", "https://images.unsplash.com/photo-1574071318508-1cdbab80d002?w=400"),
+                ("Premium Veg Burger", "Crispy veg patty with cheese and fries", 199.0, "Fast Food", "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=400"),
                 ("Cold Coffee", "Chilled milk blended with rich coffee", 150.0, "Beverages", "https://images.unsplash.com/photo-1461023058943-07fcbe16d735?w=400"),
-                ("Gulab Jamun", "Soft cottage cheese dumplings in sugar syrup", 120.0, "Desserts", "https://images.unsplash.com/photo-1605197132832-da6f55462fc1?w=400"),
+                ("Oreo Shake", "Thick shake blended with Oreo cookies", 180.0, "Beverages", "https://images.unsplash.com/photo-1572490122747-3968b75cc699?w=400"),
+                ("Fresh Lime Soda", "Refreshing sweet and salty lime soda", 90.0, "Beverages", "https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?w=400"),
+                ("Gulab Jamun", "Soft cottage cheese dumplings in sugar syrup", 120.0, "Desserts", "https://images.unsplash.com/photo-1666190020823-53629626d89f?w=400"),
+                ("Sizzling Brownie", "Hot brownie with vanilla ice cream", 250.0, "Desserts", "https://images.unsplash.com/photo-1606313564200-e75d5e30476c?w=400"),
             ]
 
             for name, desc, price, category, img in items:
@@ -222,32 +233,32 @@ def seed_data(db: Session = Depends(get_db)):
     if not db.query(MenuItem).first():
         items = [
             # South Indian
-            ("Masala Dosa", "Crispy crepe with spiced potato filling", 120.0, "South Indian", "https://images.unsplash.com/photo-1589301760014-d929f39ce9b1?w=400"),
+            ("Masala Dosa", "Crispy crepe with spiced potato filling", 120.0, "South Indian", "https://images.unsplash.com/photo-1630383249896-424e482df921?w=400"),
             ("Idli Sambar", "Steamed rice cakes with lentil soup", 80.0, "South Indian", "https://images.unsplash.com/photo-1589301760014-d929f39ce9b1?w=400"),
-            ("Medu Vada", "Crispy lentil donuts", 90.0, "South Indian", "https://images.unsplash.com/photo-1589301760014-d929f39ce9b1?w=400"),
+            ("Medu Vada", "Crispy lentil donuts", 90.0, "South Indian", "https://images.unsplash.com/photo-1626132647523-66f5bf380027?w=400"),
             
             # Starters
             ("Paneer Tikka", "Grilled cottage cheese marinated in spices", 240.0, "Starters", "https://images.unsplash.com/photo-1567188040759-fb8a883dc6d8?w=400"),
             ("Chicken 65", "Spicy, deep-fried chicken starter", 280.0, "Starters", "https://images.unsplash.com/photo-1610057099443-fde8c4d50f91?w=400"),
-            ("Crispy Corn", "Fried sweet corn tossed in spices", 180.0, "Starters", "https://images.unsplash.com/photo-1610057099443-fde8c4d50f91?w=400"),
-            ("Gobi Manchurian", "Indo-Chinese fried cauliflower", 200.0, "Starters", "https://images.unsplash.com/photo-1567188040759-fb8a883dc6d8?w=400"),
+            ("Crispy Corn", "Fried sweet corn tossed in spices", 180.0, "Starters", "https://images.unsplash.com/photo-1551754655-cd27e38d2076?w=400"),
+            ("Gobi Manchurian", "Indo-Chinese fried cauliflower", 200.0, "Starters", "https://images.unsplash.com/photo-1645177628172-a94c1f96e6db?w=400"),
             
             # North Indian / Main Course
-            ("Butter Chicken", "Rich creamy tomato chicken curry", 350.0, "Main Course", "https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?w=400"),
-            ("Paneer Butter Masala", "Cottage cheese in rich tomato gravy", 300.0, "Main Course", "https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?w=400"),
+            ("Butter Chicken", "Rich creamy tomato chicken curry", 350.0, "Main Course", "https://images.unsplash.com/photo-1603894584373-5ac82b2ae398?w=400"),
+            ("Paneer Butter Masala", "Cottage cheese in rich tomato gravy", 300.0, "Main Course", "https://images.unsplash.com/photo-1631452180519-c014fe946bc7?w=400"),
             ("Dal Makhani", "Slow-cooked black lentils", 220.0, "Main Course", "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=400"),
-            ("Garlic Naan", "Flatbread baked with minced garlic", 60.0, "Main Course", "https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?w=400"),
-            ("Jeera Rice", "Basmati rice tempered with cumin", 150.0, "Main Course", "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=400"),
+            ("Garlic Naan", "Flatbread baked with minced garlic", 60.0, "Main Course", "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=400"),
+            ("Jeera Rice", "Basmati rice tempered with cumin", 150.0, "Main Course", "https://images.unsplash.com/photo-1596560548464-f010549b84d7?w=400"),
             
             # Biryani
             ("Hyderabadi Chicken Biryani", "Authentic dum biryani with raita", 380.0, "Biryani", "https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=400"),
-            ("Mutton Dum Biryani", "Slow-cooked tender mutton biryani", 450.0, "Biryani", "https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=400"),
-            ("Paneer Biryani", "Fragrant rice with spiced paneer cubes", 300.0, "Biryani", "https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=400"),
+            ("Mutton Dum Biryani", "Slow-cooked tender mutton biryani", 450.0, "Biryani", "https://images.unsplash.com/photo-1642821373181-696a54913e93?w=400"),
+            ("Paneer Biryani", "Fragrant rice with spiced paneer cubes", 300.0, "Biryani", "https://images.unsplash.com/photo-1633945274405-b6c8069047b0?w=400"),
 
             # Fast Food
-            ("Marguerita Pizza", "Classic cheese and tomato pizza", 299.0, "Fast Food", "https://images.unsplash.com/photo-1513104890138-7c749659a591?w=400"),
+            ("Margherita Pizza", "Classic cheese and tomato pizza", 299.0, "Fast Food", "https://images.unsplash.com/photo-1574071318508-1cdbab80d002?w=400"),
             ("Premium Veg Burger", "Crispy veg patty with cheese and fries", 199.0, "Fast Food", "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=400"),
-            ("Spicy Chicken Burger", "Fried chicken breast with spicy mayo", 249.0, "Fast Food", "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=400"),
+            ("Spicy Chicken Burger", "Fried chicken breast with spicy mayo", 249.0, "Fast Food", "https://images.unsplash.com/photo-1553979459-d2229ba7433b?w=400"),
 
             # Beverages & Shakes
             ("Cold Coffee", "Chilled milk blended with rich coffee", 150.0, "Beverages", "https://images.unsplash.com/photo-1461023058943-07fcbe16d735?w=400"),
@@ -255,8 +266,8 @@ def seed_data(db: Session = Depends(get_db)):
             ("Fresh Lime Soda", "Refreshing sweet and salty lime soda", 90.0, "Beverages", "https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?w=400"),
             
             # Desserts
-            ("Gulab Jamun", "Soft cottage cheese dumplings in sugar syrup", 120.0, "Desserts", "https://images.unsplash.com/photo-1605197132832-da6f55462fc1?w=400"),
-            ("Sizzling Brownie", "Hot brownie with vanilla ice cream", 250.0, "Desserts", "https://images.unsplash.com/photo-1605197132832-da6f55462fc1?w=400")
+            ("Gulab Jamun", "Soft cottage cheese dumplings in sugar syrup", 120.0, "Desserts", "https://images.unsplash.com/photo-1666190020823-53629626d89f?w=400"),
+            ("Sizzling Brownie", "Hot brownie with vanilla ice cream", 250.0, "Desserts", "https://images.unsplash.com/photo-1606313564200-e75d5e30476c?w=400")
         ]
         
         for name, desc, price, category, img in items:
