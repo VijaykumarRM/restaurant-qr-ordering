@@ -1051,7 +1051,15 @@
                 currentMenu = data.menu || [];
                 renderMenuUI();
             } catch (error) {
-                document.getElementById("menuList").innerHTML = `<div style="text-align:center; padding: 40px; color:var(--text-muted);">Failed to load menu. Please check connection.</div>`;
+                const isInvalidToken = error.message && error.message.includes("Invalid QR token");
+                const errorMsg = isInvalidToken
+                    ? "Invalid QR code token. Please scan a valid Table QR code."
+                    : "Failed to load menu. Please check connection.";
+
+                document.getElementById("menuList").innerHTML = `<div style="text-align:center; padding: 40px; color:var(--text-muted); font-weight: 500;">
+                    <i class="ph-bold ph-warning-circle" style="font-size: 40px; color: var(--brand); margin-bottom: 12px;"></i>
+                    <p style="margin-top: 8px;">${errorMsg}</p>
+                </div>`;
             }
         }
 
