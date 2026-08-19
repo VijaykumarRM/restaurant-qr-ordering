@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kitchen Display System</title>
+    <!-- Phosphor Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #121212;
+            --surface: #1e1e1e;
+            --text: #ffffff;
+            --text-dim: #a0a0a0;
+            --brand: #e23744;
+            --green: #22c55e;
+            --yellow: #f59e0b;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Outfit', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            overflow-x: hidden;
+        }
+
+        .header {
+            background: var(--surface);
+            padding: 20px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.05);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 24px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .refresh-spinner {
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        .kds-container {
+            padding: 24px;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 24px;
+            align-items: start;
+        }
+
+        .ticket {
+            background: var(--surface);
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            border-top: 5px solid var(--brand);
+            transition: all 0.3s ease;
+        }
+
+        .ticket.status-preparing {
+            border-top-color: var(--yellow);
+        }
+
+        .ticket.status-ready {
+            border-top-color: var(--green);
+            opacity: 0.6;
+        }
+
+        .ticket-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 16px;
+            border-bottom: 1px dashed rgba(255, 255, 255, 0.1);
+        }
+
+        .table-badge {
+            background: rgba(226, 55, 68, 0.15);
+            color: var(--brand);
+            padding: 6px 14px;
+            border-radius: 100px;
+            font-weight: 700;
+            font-size: 18px;
+        }
+
+        .ticket.status-preparing .table-badge {
+            color: var(--yellow);
+            background: rgba(245, 158, 11, 0.15);
+        }
+
+        .item-list {
+            list-style: none;
+            padding: 0;
+            margin: 0 0 24px 0;
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .item-list li {
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .item-qty {
+            color: var(--brand);
+            margin-right: 12px;
+        }
+
+        .ticket.status-preparing .item-qty {
+            color: var(--yellow);
+        }
+
+        .action-row {
+            display: flex;
+            gap: 12px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 14px;
+            border: none;
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .btn:active {
+            transform: scale(0.95);
+        }
+
+        .btn-prep {
+            background: var(--yellow);
+            color: #000;
+        }
+
+        .btn-ready {
+            background: var(--green);
+            color: #fff;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="header">
+        <h1><i class="ph-fill ph-cooking-pot" style="color:var(--brand);"></i> Live Kitchen Display</h1>
+        <div style="color:var(--text-dim); display:flex; align-items:center; gap:8px;">
+            <i class="ph-bold ph-arrows-clockwise" id="refreshIcon"></i> Auto-refreshing
+        </div>
+    </div>
+
+    <div class="kds-container" id="kdsBoard">
+        <!-- Tickets will appear here -->
+    </div>
+
+    <script>
+        const API_URL = window.location.origin;
+        const RESTAURANT_ID = 1;
+
+        async function loadTickets() {
+            document.getElementById('refreshIcon').classList.add('refresh-spinner');
+
+            try {
+                const response = await fetch(`${API_URL}/restaurants/${RESTAURANT_ID}/orders`);
+                const data = await response.json();
+
+                const board = document.getElementById("kdsBoard");
+                board.innerHTML = '';
+
+                if (data.orders.length === 0) {
+                    board.innerHTML = '<h2 style="color:var(--text-dim); text-align:center; width:100%; grid-column:1/-1;">No active orders in the kitchen.</h2>';
+                }
+
+                // Sort: Pending first, Preparing second, Ready last
+                const sortedOrders = data.orders.sort((a, b) => {
+                    if (a.status === 'pending' && b.status !== 'pending') return -1;
+                    if (a.status === 'preparing' && b.status === 'ready') return -1;
+                    return 0;
+                });
+
+                sortedOrders.forEach(order => {
+                    // Only show today's active kitchen orders
+                    if (order.status === 'completed') return;
+
+                    let statusClass = '';
+                    let actionButtons = '';
+
+                    if (order.status === 'pending') {
+                        actionButtons = `<button class="btn btn-prep" onclick="updateStatus(${order.id}, 'preparing')">👨‍🍳 Start Preparing</button>`;
+                    } else if (order.status === 'preparing') {
+                        statusClass = 'status-preparing';
+                        actionButtons = `<button class="btn btn-ready" onclick="updateStatus(${order.id}, 'ready')">✅ Mark as Ready</button>`;
+                    } else if (order.status === 'ready') {
+                        statusClass = 'status-ready';
+                        actionButtons = `<button class="btn" style="background:#333; color:white;" onclick="updateStatus(${order.id}, 'completed')">Archive (Served)</button>`;
+                    }
+
+                    const itemsHtml = order.items.map(i => `
+                        <li>
+                            <span><span class="item-qty">${i.quantity}x</span> ${i.name}</span>
+                        </li>
+                    `).join('');
+
+                    // Time logic
+                    const timeStr = new Date(order.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+                    board.innerHTML += `
+                        <div class="ticket ${statusClass}">
+                            <div class="ticket-header">
+                                <div class="table-badge">Table ${order.table_number}</div>
+                                <div style="color:var(--text-dim);">${timeStr}</div>
+                            </div>
+                            <ul class="item-list">
+                                ${itemsHtml}
+                            </ul>
+                            <div class="action-row">
+                                ${actionButtons}
+                            </div>
+                        </div>
+                    `;
+                });
+            } catch (err) {
+                console.log(err);
+            }
+
+            setTimeout(() => {
+                document.getElementById('refreshIcon').classList.remove('refresh-spinner');
+            }, 500);
+        }
+
+        async function updateStatus(orderId, newStatus) {
+            try {
+                await fetch(`${API_URL}/orders/${orderId}/status?status=${newStatus}`, { method: 'PATCH' });
+                loadTickets();
+            } catch (err) {
+                alert("Failed to update status.");
+            }
+        }
+
+        // Init and set interval
+        loadTickets();
+        setInterval(loadTickets, 5000); // Super fast 5s refresh for kitchen
+
+    </script>
+</body>
+
+</html>

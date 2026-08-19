@@ -1,0 +1,26 @@
+__pycache__/
+*.py[cod]
+*.db
+*.sqlite3
+.env
+venv/
+.venv/
+env/
+*.egg-info/
+dist/
+build/
+*.log
+error_log.txt
+tree_output.txt
+token.txt
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Deployment artifacts (not needed on Render/GitHub)
+cloudflared.exe
+cloudflare.log
+lhr_output.txt
+import_test.txt
+qr_codes/

@@ -1,0 +1,22 @@
+{
+    "name": "Smart Hotel OrderingApp",
+    "short_name": "Hotel App",
+    "description": "Zomato-style Smart Restaurant & Hotel Ordering System",
+    "start_url": "/customer-menu?source=pwa",
+    "display": "standalone",
+    "background_color": "#121212",
+    "theme_color": "#e23744",
+    "orientation": "portrait",
+    "icons": [
+        {
+            "src": "https://cdn-icons-png.flaticon.com/512/3703/3703377.png",
+            "sizes": "192x192",
+            "type": "image/png"
+        },
+        {
+            "src": "https://cdn-icons-png.flaticon.com/512/3703/3703377.png",
+            "sizes": "512x512",
+            "type": "image/png"
+        }
+    ]
+}
