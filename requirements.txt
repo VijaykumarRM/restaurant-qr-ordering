@@ -4,4 +4,3 @@ sqlalchemy==2.0.35
 pydantic[email]==2.9.2
 qrcode==8.0
 pillow==10.4.0
-requests==2.31.0

@@ -5,9 +5,8 @@ from fastapi.staticfiles import StaticFiles
 from sqlalchemy.orm import Session
 import secrets
 import os
-import requests
 import json
-import os
+import urllib.request
 
 from .database import Base, engine, get_db
 from .models import Restaurant, RestaurantTable, MenuItem, Order, OrderItem, Payment
@@ -721,11 +720,9 @@ def get_restaurant_orders(
 def notify_n8n(event_type: str, data: dict):
     n8n_url = os.getenv("N8N_WEBHOOK_URL", "https://your-n8n-domain.com/webhook/restaurant-event")
     try:
-        payload = {
-            "event": event_type,
-            "data": data
-        }
-        requests.post(n8n_url, json=payload, timeout=5)
+        payload = json.dumps({"event": event_type, "data": data}).encode("utf-8")
+        req = urllib.request.Request(n8n_url, data=payload, headers={"Content-Type": "application/json"}, method="POST")
+        urllib.request.urlopen(req, timeout=5)
     except Exception as e:
         print(f"Failed to send webhook to n8n: {e}")
 
