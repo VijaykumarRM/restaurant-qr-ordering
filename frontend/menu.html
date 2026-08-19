@@ -686,6 +686,119 @@
             font-size: 16px;
         }
 
+        /* ===== PAYMENT QR OVERLAY ===== */
+        .payment-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(12px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9998;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+        }
+
+        .payment-overlay.visible {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .payment-card {
+            background: var(--surface);
+            width: calc(100% - 32px);
+            max-width: 400px;
+            border-radius: 24px;
+            padding: 32px 24px;
+            text-align: center;
+            transform: scale(0.9);
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .payment-overlay.visible .payment-card {
+            transform: scale(1);
+        }
+
+        .payment-card .pay-icon {
+            width: 56px;
+            height: 56px;
+            background: linear-gradient(135deg, #6C63FF, #3B82F6);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            margin: 0 auto 16px;
+        }
+
+        .payment-card h3 {
+            font-size: 20px;
+            font-weight: 800;
+            margin-bottom: 4px;
+        }
+
+        .payment-card .pay-amount {
+            font-size: 32px;
+            font-weight: 800;
+            color: var(--brand);
+            margin: 8px 0 16px;
+        }
+
+        .payment-card .qr-container {
+            background: white;
+            padding: 16px;
+            border-radius: 16px;
+            display: inline-block;
+            margin-bottom: 16px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        }
+
+        .payment-card .qr-container img {
+            width: 200px;
+            height: 200px;
+        }
+
+        .payment-card .upi-id {
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-bottom: 20px;
+        }
+
+        .btn-paid {
+            width: 100%;
+            background: linear-gradient(135deg, var(--green), #059669);
+            color: white;
+            border: none;
+            padding: 16px;
+            border-radius: var(--radius-md);
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 6px 20px rgba(36, 150, 63, 0.3);
+            transition: transform 0.2s;
+            margin-bottom: 10px;
+        }
+
+        .btn-paid:active {
+            transform: scale(0.98);
+        }
+
+        .btn-pay-cash {
+            width: 100%;
+            background: transparent;
+            color: var(--text-muted);
+            border: 1px solid var(--border);
+            padding: 14px;
+            border-radius: var(--radius-md);
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
         /* ===== AI VOICE ORDERING ===== */
         .voice-btn {
             position: fixed;
@@ -868,21 +981,49 @@
         </div>
     </div>
 
+    <!-- PAYMENT QR OVERLAY -->
+    <div class="payment-overlay" id="paymentOverlay">
+        <div class="payment-card">
+            <div class="pay-icon"><i class="ph-fill ph-qr-code"></i></div>
+            <h3>Scan to Pay</h3>
+            <div class="pay-amount" id="payQrAmount">₹0</div>
+            <div class="qr-container">
+                <img id="payQrImage" src="" alt="UPI Payment QR">
+            </div>
+            <div class="upi-id">UPI ID: <strong id="payUpiId">vijaycafe@upi</strong></div>
+            <button class="btn-paid" id="btnConfirmPaid" onclick="confirmPayment()">✅ I've Paid</button>
+            <button class="btn-pay-cash" onclick="payWithCash()">💵 Pay at Counter (Cash)</button>
+        </div>
+    </div>
+
     <!-- SUCCESS OVERLAY -->
     <div class="success-overlay" id="successOverlay">
         <div class="success-card">
             <div class="sc-icon"><i class="ph-bold ph-check"></i></div>
-            <div class="sc-title">Order Successful!</div>
-            <div class="sc-desc">Your order <strong id="successCode">#123</strong> has been placed and payment is
-                received. The kitchen has been notified.</div>
+            <div class="sc-title">Order Confirmed!</div>
+            <div class="sc-desc">Your order <strong id="successCode">#123</strong> has been placed.
+                The kitchen is preparing your food. 🍳</div>
             <button class="sc-btn" onclick="closeSuccess()">Browse Menu Again</button>
         </div>
     </div>
 
     <script>
-        const API_URL = window.location.origin;
+        let API_URL = window.location.origin;
+        if (window.location.protocol === "file:" || !window.location.origin || window.location.origin === "null") {
+            API_URL = "http://127.0.0.1:8000";
+        } else {
+            const isLocal = window.location.hostname === "localhost" ||
+                window.location.hostname === "127.0.0.1" ||
+                window.location.hostname.startsWith("192.168.") ||
+                window.location.hostname.startsWith("10.");
+            if (isLocal && window.location.port !== "8000") {
+                API_URL = `${window.location.protocol}//${window.location.hostname}:8000`;
+            }
+        }
         const cart = {};
         let currentMenu = [];
+        let restaurantName = "Vijay Cafe";
+        let restaurantUpiId = "vijaycafe@upi";
         const urlParams = new URLSearchParams(window.location.search);
         const token = urlParams.get("token");
 
@@ -901,7 +1042,10 @@
 
                 if (!response.ok) throw new Error(data.detail);
 
-                document.getElementById("restaurantName").innerText = data.restaurant.name;
+                restaurantName = data.restaurant.name || "Vijay Cafe";
+                restaurantUpiId = data.restaurant.upi_id || "vijaycafe@upi";
+
+                document.getElementById("restaurantName").innerText = restaurantName;
                 document.getElementById("tableInfo").innerText = `Table ${data.table.number}`;
 
                 currentMenu = data.menu || [];
@@ -1167,16 +1311,17 @@
         }
 
         // ===== CHECKOUT FLOW =====
+        let pendingOrderId = null;
+        let pendingTotal = 0;
+
         async function placeAndPayOrder() {
             const btn = document.getElementById("btnPlaceOrder");
-            btn.innerHTML = `<i class="ph-bold ph-spinner ph-spin"></i> Processing...`;
+            btn.innerHTML = `<i class="ph-bold ph-spinner ph-spin"></i> Placing Order...`;
             btn.style.pointerEvents = 'none';
 
             try {
                 // 1. Create Order
                 const itemsPayload = Object.keys(cart).map(id => ({ menu_item_id: parseInt(id), quantity: cart[id] }));
-
-                // Use timeout to fake processing feel for the premium experience
                 await new Promise(r => setTimeout(r, 800));
 
                 const orderReq = await fetch(`${API_URL}/orders`, {
@@ -1187,27 +1332,87 @@
                 const orderRes = await orderReq.json();
                 if (!orderReq.ok) throw new Error("Order creation failed");
 
-                // 2. Pay Order
-                const total = parseFloat(btn.getAttribute('data-total'));
-                const payReq = await fetch(`${API_URL}/orders/${orderRes.id}/pay`, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ amount: total, payment_method: "online" })
-                });
-                const payRes = await payReq.json();
+                // Save order info for payment step
+                pendingOrderId = orderRes.id;
+                pendingTotal = parseFloat(btn.getAttribute('data-total'));
 
-                // 3. Success UI
+                // 2. Close checkout drawer & show Payment QR
                 document.getElementById("checkoutDrawer").classList.remove("open");
                 document.getElementById("successCode").innerText = `#${orderRes.order_code}`;
-                document.getElementById("successOverlay").classList.add("visible");
 
-                // Reset Cart
-                Object.keys(cart).forEach(id => updateCart(id, -cart[id]));
+                showPaymentQR(pendingTotal, orderRes.order_code);
 
             } catch (err) {
                 alert("Oops! Something went wrong.");
                 btn.innerHTML = `<span>Try Again</span><span><i class="ph-bold ph-arrow-right"></i></span>`;
             } finally {
+                btn.style.pointerEvents = 'auto';
+                btn.innerHTML = `<span id="btnPayText">Place Order</span><span><i class="ph-bold ph-arrow-right"></i></span>`;
+            }
+        }
+
+        function showPaymentQR(amount, orderCode) {
+            const upiId = restaurantUpiId;
+            const name = restaurantName;
+            const upiUrl = `upi://pay?pa=${upiId}&pn=${encodeURIComponent(name)}&am=${amount.toFixed(2)}&cu=INR&tn=Order-${orderCode}`;
+
+            // Generate QR code image using a free API
+            const qrImageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(upiUrl)}`;
+
+            document.getElementById("payQrAmount").innerText = `₹${amount.toFixed(0)}`;
+            document.getElementById("payQrImage").src = qrImageUrl;
+            document.getElementById("payUpiId").innerText = upiId;
+            document.getElementById("paymentOverlay").classList.add("visible");
+        }
+
+        async function confirmPayment() {
+            const btn = document.getElementById("btnConfirmPaid");
+            btn.innerHTML = `<i class="ph-bold ph-spinner ph-spin"></i> Confirming...`;
+            btn.style.pointerEvents = 'none';
+
+            try {
+                const payReq = await fetch(`${API_URL}/orders/${pendingOrderId}/pay`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ amount: pendingTotal, payment_method: "upi" })
+                });
+                if (!payReq.ok) throw new Error("Payment failed");
+
+                // Hide payment, show success
+                document.getElementById("paymentOverlay").classList.remove("visible");
+                document.getElementById("successOverlay").classList.add("visible");
+
+                // Reset Cart
+                Object.keys(cart).forEach(id => updateCart(id, -cart[id]));
+            } catch (err) {
+                alert("Payment confirmation failed. Try again.");
+            } finally {
+                btn.innerHTML = `✅ I've Paid`;
+                btn.style.pointerEvents = 'auto';
+            }
+        }
+
+        async function payWithCash() {
+            const btn = document.querySelector(".btn-pay-cash");
+            btn.innerHTML = `Processing...`;
+            btn.style.pointerEvents = 'none';
+
+            try {
+                const payReq = await fetch(`${API_URL}/orders/${pendingOrderId}/pay`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ amount: pendingTotal, payment_method: "cash" })
+                });
+                if (!payReq.ok) throw new Error("Payment failed");
+
+                document.getElementById("paymentOverlay").classList.remove("visible");
+                document.getElementById("successOverlay").classList.add("visible");
+
+                Object.keys(cart).forEach(id => updateCart(id, -cart[id]));
+            } catch (err) {
+                alert("Failed. Try again.");
+            } finally {
+                btn.innerHTML = `💵 Pay at Counter (Cash)`;
                 btn.style.pointerEvents = 'auto';
             }
         }

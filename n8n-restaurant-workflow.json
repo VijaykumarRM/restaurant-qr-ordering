@@ -1,0 +1,127 @@
+{
+  "name": "Restaurant QR Orders - Notification Workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "restaurant-event",
+        "options": {}
+      },
+      "id": "1a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c6d",
+      "name": "Restaurant Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        240,
+        300
+      ],
+      "webhookId": "restaurant-webhook-1234"
+    },
+    {
+      "parameters": {
+        "dataType": "string",
+        "value1": "={{ $json.body.event }}",
+        "rules": {
+          "rules": [
+            {
+              "value2": "order_created",
+              "output": 0
+            },
+            {
+              "value2": "payment_successful",
+              "output": 1
+            }
+          ]
+        }
+      },
+      "id": "8a7b6c5d-4e3f-2a1b-0c9d-8e7f6a5b4c3d",
+      "name": "Check Event Type",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 1,
+      "position": [
+        500,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "content": "=*NEW ORDER ALERT!*\nOrder Code: {{$json.body.data.order_code}}\nTable: {{$json.body.data.table_id}}\nTotal: ₹{{$json.body.data.total_amount}}",
+        "chatId": "YOUR_CHAT_ID"
+      },
+      "id": "Telegram_Node_1",
+      "name": "Telegram: Send to Kitchen",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1,
+      "position": [
+        800,
+        180
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_GOOGLE_SHEET_ID",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Sheet1",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "OrderCode": "={{$json.body.data.order.order_code}}",
+            "PaidAmount": "={{$json.body.data.payment.amount}}",
+            "Status": "Paid"
+          }
+        },
+        "options": {}
+      },
+      "id": "Google_Sheets_Node_1",
+      "name": "Google Sheets: Sync Revenue",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4,
+      "position": [
+        800,
+        420
+      ]
+    }
+  ],
+  "connections": {
+    "Restaurant Webhook": {
+      "main": [
+        [
+          {
+            "node": "Check Event Type",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Event Type": {
+      "main": [
+        [
+          {
+            "node": "Telegram: Send to Kitchen",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Google Sheets: Sync Revenue",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  }
+}

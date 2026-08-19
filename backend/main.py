@@ -79,7 +79,7 @@ def auto_seed():
         existing = db.query(Restaurant).first()
         if not existing:
             print("⚡ No data found — auto-seeding demo restaurant...")
-            restaurant = Restaurant(name="Vijay Cafe", email="vijay@cafe.com")
+            restaurant = Restaurant(name="Vijay Cafe", email="vijay@cafe.com", upi_id="vijaycafe@upi")
             db.add(restaurant)
             db.flush()
 
@@ -213,6 +213,7 @@ def seed_data(db: Session = Depends(get_db)):
     restaurant = Restaurant(
         name="Vijay Cafe",
         email="vijay@cafe.com",
+        upi_id="vijaycafe@upi",
     )
     db.add(restaurant)
     db.flush()
@@ -311,6 +312,7 @@ def get_restaurants(
                 "id": restaurant.id,
                 "name": restaurant.name,
                 "email": restaurant.email,
+                "upi_id": getattr(restaurant, "upi_id", "vijaycafe@upi") or "vijaycafe@upi",
             }
             for restaurant in restaurants
         ],
@@ -344,6 +346,7 @@ def create_restaurant(
     new_restaurant = Restaurant(
         name=restaurant.name,
         email=restaurant.email,
+        upi_id=restaurant.upi_id,
     )
 
     db.add(new_restaurant)
@@ -351,6 +354,39 @@ def create_restaurant(
     db.refresh(new_restaurant)
 
     return new_restaurant
+
+# ============================================================
+# UPDATE RESTAURANT
+# ============================================================
+
+@app.patch("/restaurants/{restaurant_id}")
+def update_restaurant_settings(
+    restaurant_id: int,
+    payload: dict,
+    db: Session = Depends(get_db)
+):
+    restaurant = db.query(Restaurant).filter(Restaurant.id == restaurant_id).first()
+    if not restaurant:
+        raise HTTPException(status_code=404, detail="Restaurant not found")
+    
+    if "upi_id" in payload:
+        restaurant.upi_id = payload["upi_id"]
+    if "name" in payload:
+        restaurant.name = payload["name"]
+    if "email" in payload:
+        restaurant.email = payload["email"]
+        
+    db.commit()
+    db.refresh(restaurant)
+    return {
+        "success": True,
+        "restaurant": {
+            "id": restaurant.id,
+            "name": restaurant.name,
+            "email": restaurant.email,
+            "upi_id": restaurant.upi_id
+        }
+    }
 
 
 # ============================================================
@@ -517,6 +553,7 @@ def get_menu(
         "restaurant": {
             "id": restaurant.id,
             "name": restaurant.name,
+            "upi_id": getattr(restaurant, "upi_id", "vijaycafe@upi") or "vijaycafe@upi",
         },
         "table": {
             "id": table.id,

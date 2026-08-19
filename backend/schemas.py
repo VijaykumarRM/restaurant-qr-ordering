@@ -8,12 +8,14 @@ from pydantic import BaseModel, EmailStr
 class RestaurantCreate(BaseModel):
     name: str
     email: EmailStr
+    upi_id: str | None = "vijaycafe@upi"
 
 
 class RestaurantResponse(BaseModel):
     id: int
     name: str
     email: str
+    upi_id: str | None = None
 
     class Config:
         from_attributes = True

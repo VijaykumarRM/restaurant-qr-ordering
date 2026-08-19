@@ -922,6 +922,19 @@
                 <div class="scanner-status" id="scannerStatus" style="display:none;"></div>
             </div>
 
+            <!-- PAYMENT SETTINGS -->
+            <div class="card">
+                <div class="card-header">
+                    <h2>⚙️ Payment Settings</h2>
+                </div>
+                <label for="restaurantUpi">UPI ID for Payments (Scan to Pay QR)</label>
+                <input id="restaurantUpi" type="text" placeholder="e.g., brandname@api or shopname@upi">
+
+                <button class="btn btn-success" onclick="updatePaymentSettings()" style="margin-top:20px;">💾 Save
+                    Settings</button>
+                <div id="paymentSettingsMsg" style="margin-top:12px; font-weight:600; display:none;"></div>
+            </div>
+
             <!-- ADD FOOD -->
             <div class="card">
                 <div class="card-header">
@@ -982,7 +995,18 @@
     <script>
 
         // ===== CONFIG =====
-        const API_URL = window.location.origin;
+        let API_URL = window.location.origin;
+        if (window.location.protocol === "file:" || !window.location.origin || window.location.origin === "null") {
+            API_URL = "http://127.0.0.1:8000";
+        } else {
+            const isLocal = window.location.hostname === "localhost" ||
+                window.location.hostname === "127.0.0.1" ||
+                window.location.hostname.startsWith("192.168.") ||
+                window.location.hostname.startsWith("10.");
+            if (isLocal && window.location.port !== "8000") {
+                API_URL = `${window.location.protocol}//${window.location.hostname}:8000`;
+            }
+        }
         const RESTAURANT_ID = 1;
         let html5QrcodeScanner = null;
         let scannerActive = false;
@@ -1198,7 +1222,8 @@
                     grid.className = 'table-grid';
 
                     data.tables.forEach(table => {
-                        const url = `${window.location.origin}/customer-menu?token=${table.qr_token}`;
+                        const path = window.location.port === "5500" ? "/menu.html" : "/customer-menu";
+                        const url = `${window.location.origin}${path}?token=${table.qr_token}`;
                         const card = document.createElement("div");
                         card.className = "table-card";
                         card.innerHTML = `
@@ -1439,11 +1464,63 @@
             }
         }
 
+        let restaurantDetails = null;
+
+        async function loadRestaurantDetails() {
+            try {
+                const res = await fetch(`${API_URL}/restaurants`);
+                const data = await res.json();
+                if (data.success && data.restaurants && data.restaurants.length > 0) {
+                    const rest = data.restaurants.find(r => r.id === RESTAURANT_ID) || data.restaurants[0];
+                    restaurantDetails = rest;
+                    document.getElementById("restaurantUpi").value = rest.upi_id || "vijaycafe@upi";
+                }
+            } catch (e) {
+                console.log("Failed to load restaurant details:", e);
+            }
+        }
+
+        async function updatePaymentSettings() {
+            const upiId = document.getElementById("restaurantUpi").value.trim();
+            const msg = document.getElementById("paymentSettingsMsg");
+            if (!upiId) {
+                msg.textContent = "❌ UPI ID cannot be empty.";
+                msg.style.color = "var(--red)";
+                msg.style.display = "block";
+                return;
+            }
+
+            msg.textContent = "Saving...";
+            msg.style.color = "var(--text-dim)";
+            msg.style.display = "block";
+
+            try {
+                const response = await fetch(`${API_URL}/restaurants/${RESTAURANT_ID}`, {
+                    method: "PATCH",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ upi_id: upiId })
+                });
+                const data = await response.json();
+                if (response.ok && data.success) {
+                    msg.textContent = "✅ UPI settings saved successfully!";
+                    msg.style.color = "var(--green)";
+                    showToast("⚙️ UPI Payment settings updated!");
+                } else {
+                    msg.textContent = "❌ Failed to save settings.";
+                    msg.style.color = "var(--red)";
+                }
+            } catch (err) {
+                msg.textContent = "❌ Error connecting to server.";
+                msg.style.color = "var(--red)";
+            }
+        }
+
         async function initDashboard() {
             await seedData();
             loadMenu();
             loadOrders();
             loadTables();
+            loadRestaurantDetails();
             // Auto-refresh every 15 seconds
             setInterval(() => { loadOrders(); }, 15000);
         }

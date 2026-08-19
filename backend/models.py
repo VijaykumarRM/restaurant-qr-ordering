@@ -19,6 +19,7 @@ class Restaurant(Base):
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String(150), nullable=False)
     email = Column(String(255), unique=True, nullable=False)
+    upi_id = Column(String(100), nullable=True, default="vijaycafe@upi")
     created_at = Column(DateTime, default=datetime.utcnow)
 
     tables = relationship(
