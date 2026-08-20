@@ -73,11 +73,13 @@ async def add_cors_and_pna(request: Request, call_next):
 
 
 # ============================================================
-# PATHS
+# PATHS & STATIC FILES
 # ============================================================
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 FRONTEND_DIR = os.path.join(BASE_DIR, "frontend")
+
+app.mount("/frontend", StaticFiles(directory=FRONTEND_DIR), name="frontend")
 
 
 # ============================================================
@@ -152,14 +154,12 @@ def auto_seed():
 
 @app.get("/", response_class=HTMLResponse)
 def serve_home():
-    """Redirect to admin dashboard."""
-    return """
-    <!DOCTYPE html>
-    <html>
-    <head><meta http-equiv="refresh" content="0; url=/admin"></head>
-    <body><p>Redirecting to <a href="/admin">Admin Dashboard</a>...</p></body>
-    </html>
-    """
+    """Serve the root portal page."""
+    portal_path = os.path.join(BASE_DIR, "index.html")
+    if os.path.exists(portal_path):
+        with open(portal_path, "r", encoding="utf-8") as f:
+            return HTMLResponse(content=f.read())
+    return HTMLResponse(content="<h1>Portal page not found</h1>", status_code=404)
 
 
 @app.get("/admin", response_class=HTMLResponse)
@@ -193,11 +193,11 @@ def serve_kitchen():
 
 @app.get("/manifest.json")
 def serve_manifest():
-    return FileResponse(os.path.join(FRONTEND_DIR, "manifest.json"))
+    return FileResponse(os.path.join(BASE_DIR, "manifest.json"))
 
 @app.get("/sw.js")
 def serve_sw():
-    return FileResponse(os.path.join(FRONTEND_DIR, "sw.js"))
+    return FileResponse(os.path.join(BASE_DIR, "sw.js"))
 
 
 # ============================================================

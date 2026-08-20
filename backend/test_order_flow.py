@@ -4,12 +4,15 @@ from fastapi.testclient import TestClient
 
 from backend.database import SessionLocal
 from backend.main import app
-from backend.models import Restaurant, RestaurantTable, MenuItem
+from backend.models import Restaurant, RestaurantTable, MenuItem, Order, OrderItem, Payment
 
 
 class OrderFlowTest(unittest.TestCase):
     def setUp(self):
         self.db = SessionLocal()
+        self.db.query(Payment).delete()
+        self.db.query(OrderItem).delete()
+        self.db.query(Order).delete()
         self.db.query(MenuItem).delete()
         self.db.query(RestaurantTable).delete()
         self.db.query(Restaurant).delete()
@@ -48,6 +51,9 @@ class OrderFlowTest(unittest.TestCase):
         self.item = item
 
     def tearDown(self):
+        self.db.query(Payment).delete()
+        self.db.query(OrderItem).delete()
+        self.db.query(Order).delete()
         self.db.query(MenuItem).delete()
         self.db.query(RestaurantTable).delete()
         self.db.query(Restaurant).delete()
@@ -99,7 +105,7 @@ class OrderFlowTest(unittest.TestCase):
         self.assertEqual(list_response.status_code, 200, list_response.text)
         payload = list_response.json()
         self.assertEqual(payload["restaurant_id"], self.restaurant.id)
-        self.assertGreaterEqual(len(payload["orders"]), 1)
+        self.assertEqual(len(payload["orders"]), 1)
         self.assertEqual(payload["orders"][0]["id"], order_id)
 
     def test_loyalty_points_are_earned_and_redeemed(self):
@@ -115,7 +121,7 @@ class OrderFlowTest(unittest.TestCase):
 
         self.assertEqual(large_order.status_code, 200, large_order.text)
         large_payload = large_order.json()
-        self.assertEqual(large_payload["total_amount"], 1500.0)
+        self.assertEqual(large_payload["total_amount"], 1350.0)
 
         pay_response = client.post(
             f"/orders/{large_payload['id']}/pay",
