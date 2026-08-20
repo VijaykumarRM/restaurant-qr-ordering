@@ -99,8 +99,15 @@ def auto_seed():
             db.add(restaurant)
             db.flush()
 
+            preset_tokens = [
+                "11OnjJwtj6l6hp12IsjcO01r3NKgxUizcWO1k_lphho",
+                "35qzmUR5fcZ0PWqOCpptvhbhIGB26nWcHZWXcZh6mrM",
+                "ICCLyAWq6ZKB4CU9vGLvu_k5rTxaXouxSbpoSoLsM3w",
+                "cRcqsvh9PUjJkBf_cZZZxnuD0BD9g2uH31YBlaEo06I",
+                "tt9sQMmYvKOqzY0UMLffHkilFBJuVfDa3CWjNp_daS0",
+            ]
             for i in range(1, 6):
-                qr_token = secrets.token_urlsafe(32)
+                qr_token = preset_tokens[i - 1]
                 table = RestaurantTable(
                     restaurant_id=restaurant.id,
                     table_number=i,
@@ -234,8 +241,15 @@ def seed_data(db: Session = Depends(get_db)):
 
     # Create tables
     tables_data = []
+    preset_tokens = [
+        "11OnjJwtj6l6hp12IsjcO01r3NKgxUizcWO1k_lphho",
+        "35qzmUR5fcZ0PWqOCpptvhbhIGB26nWcHZWXcZh6mrM",
+        "ICCLyAWq6ZKB4CU9vGLvu_k5rTxaXouxSbpoSoLsM3w",
+        "cRcqsvh9PUjJkBf_cZZZxnuD0BD9g2uH31YBlaEo06I",
+        "tt9sQMmYvKOqzY0UMLffHkilFBJuVfDa3CWjNp_daS0",
+    ]
     for i in range(1, 6):
-        qr_token = secrets.token_urlsafe(32)
+        qr_token = preset_tokens[i - 1]
         table = RestaurantTable(
             restaurant_id=restaurant.id,
             table_number=i,
