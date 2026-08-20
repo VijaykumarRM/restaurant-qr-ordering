@@ -497,6 +497,8 @@
 
             if (window.location.protocol === "file:" || !window.location.origin || window.location.origin === "null") {
                 savedApi = defaultApi;
+            } else if (window.location.hostname.includes("github.io")) {
+                savedApi = "https://restaurant-qr-order-lnnb.onrender.com";
             }
         }
 

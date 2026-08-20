@@ -185,7 +185,9 @@
                 window.location.hostname.startsWith("10.");
             const isGitHub = window.location.hostname.includes("github.io");
 
-            if (isGitHub || window.location.protocol === "file:" || !window.location.origin || window.location.origin === "null") {
+            if (isGitHub) {
+                API_URL = "https://restaurant-qr-order-lnnb.onrender.com";
+            } else if (window.location.protocol === "file:" || !window.location.origin || window.location.origin === "null") {
                 API_URL = "http://127.0.0.1:8000";
             } else if (isLocal && window.location.port !== "8000") {
                 API_URL = `${window.location.protocol}//${window.location.hostname}:8000`;
